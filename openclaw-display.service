@@ -6,10 +6,12 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=ubuntu
-WorkingDirectory=/home/ubuntu/.openclaw/workspace/nerdminer-display
+WorkingDirectory=/home/ubuntu/.openclaw/workspace/openclaw-t-display-monitor
 Environment=OPENCLAW_DISPLAY_HOST=0.0.0.0
 Environment=OPENCLAW_DISPLAY_PORT=8765
-ExecStart=/usr/bin/python3 /home/ubuntu/.openclaw/workspace/nerdminer-display/openclaw_display_server.py
+Environment=OPENCLAW_BIN=/home/ubuntu/.nvm/versions/node/v22.18.0/bin/openclaw
+Environment=PATH=/home/ubuntu/.nvm/versions/node/v22.18.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/python3 /home/ubuntu/.openclaw/workspace/openclaw-t-display-monitor/openclaw_display_server.py
 Restart=always
 RestartSec=3
 

@@ -176,13 +176,15 @@ sudo ufw status
 
 ---
 
-## Passo 3 — opcional: rodar como serviço
+## Passo 3 — deixar o servidor sempre ligado com systemd
 
-O projeto inclui um service file:
+Se você quer que o monitor funcione sempre, mesmo após reiniciar a máquina, o ideal é rodar a API como um serviço `systemd`.
+
+O projeto já inclui este arquivo:
 
 - `openclaw-display.service`
 
-Instalação:
+### Instalação do serviço
 
 ```bash
 sudo cp openclaw-display.service /etc/systemd/system/
@@ -191,11 +193,55 @@ sudo systemctl enable --now openclaw-display.service
 sudo systemctl status openclaw-display.service
 ```
 
-Reiniciar após mudanças:
+> O service já define `OPENCLAW_BIN` e também o `PATH` do Node 22 para evitar erros como `openclaw: No such file or directory` ou uso da versão errada do Node quando rodar via systemd.
+
+### O que isso faz
+
+- inicia a API automaticamente no boot
+- reinicia automaticamente se o processo cair
+- deixa o endpoint do monitor sempre disponível para o ESP32
+
+### Comandos úteis
+
+Ver status:
+
+```bash
+sudo systemctl status openclaw-display.service
+```
+
+Reiniciar após mudanças no código:
 
 ```bash
 sudo systemctl restart openclaw-display.service
 ```
+
+Parar:
+
+```bash
+sudo systemctl stop openclaw-display.service
+```
+
+Iniciar manualmente:
+
+```bash
+sudo systemctl start openclaw-display.service
+```
+
+Ver logs ao vivo:
+
+```bash
+journalctl -u openclaw-display.service -f
+```
+
+### Se não quiser usar systemd
+
+Também dá para rodar manualmente:
+
+```bash
+python3 openclaw_display_server.py
+```
+
+Mas nesse modo, se você fechar o terminal ou reiniciar o host, o monitor para de responder.
 
 ---
 
