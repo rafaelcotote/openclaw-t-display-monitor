@@ -386,52 +386,6 @@ Revise:
 
 ---
 
-## Como compartilhar com outra pessoa
-
-O fluxo para outra pessoa replicar é:
-
-1. clonar este repositório
-2. rodar a API Python no host dela
-3. ajustar `WIFI_SSID`, `WIFI_PASSWORD` e `API_URL`
-4. configurar a Arduino IDE
-5. gravar no LILYGO T-Display-S3
-
-Esse projeto foi preparado para isso, então não depende de caminhos específicos da sua máquina.
-
----
-
-## Sugestão para publicação no GitHub
-
-Nome de repositório sugerido:
-
-```text
-openclaw-t-display-monitor
-```
-
-Arquivos que devem ser publicados:
-
-- `openclaw_display_server.py`
-- `openclaw-display.service`
-- `openclaw-logo.svg`
-- `web-preview.html`
-- `OpenClawDisplayS3/OpenClawDisplayS3.ino`
-- `README.md`
-
-Opcionalmente você pode incluir prints e fotos do display funcionando.
-
----
-
-## Próximas melhorias possíveis
-
-- configuração via `.json`
-- logo oficial ainda mais refinada no TFT
-- temas alternativos
-- botão para navegar para trás
-- autodiscovery do host na rede
-- tela extra com alertas ou métricas customizadas
-
----
-
 ## Créditos
 
 Created by @RafaelCotote
