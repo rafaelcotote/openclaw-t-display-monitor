@@ -1,0 +1,31 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs / temp
+*.log
+.tmp/
+tmp/
+
+# Local env
+.env
+.env.*
+
+# Arduino build artifacts
+build/
+*.bin
+*.elf
+*.map
+
+# Keep repo generic; users should set their own Wi-Fi/API values locally if needed
+local-config/

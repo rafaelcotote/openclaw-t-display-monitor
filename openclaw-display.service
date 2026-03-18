@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenClaw Display API for ESP32 dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/.openclaw/workspace/nerdminer-display
+Environment=OPENCLAW_DISPLAY_HOST=0.0.0.0
+Environment=OPENCLAW_DISPLAY_PORT=8765
+ExecStart=/usr/bin/python3 /home/ubuntu/.openclaw/workspace/nerdminer-display/openclaw_display_server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

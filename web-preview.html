@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OpenClaw Display Preview</title>
+  <style>
+    :root {
+      --bg: #0d0607;
+      --panel: #1b0f11;
+      --panel-2: #150b0d;
+      --border: #5e2027;
+      --text: #fff4f5;
+      --muted: #d8b6ba;
+      --accent: #ef0011;
+      --accent-soft: #ff8e98;
+      --green: #66d18f;
+      --yellow: #ffca3a;
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(239,0,17,.20), transparent 30%),
+        radial-gradient(circle at 80% 10%, rgba(255,120,120,.10), transparent 28%),
+        linear-gradient(180deg, #120809, var(--bg));
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .shell { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 390px 1fr; gap: 28px; }
+    .phone { position: sticky; top: 24px; }
+    .device-frame { position: relative; background: linear-gradient(180deg, #161c28, #0b0f16); border: 1px solid #2a3140; border-radius: 26px; padding: 18px; box-shadow: var(--shadow); }
+    .screen { width: 320px; height: 170px; border-radius: 18px; overflow: hidden; background: #000; position: relative; box-shadow: inset 0 0 0 2px rgba(255,255,255,.03); transform: scale(1.1); transform-origin: top left; margin-bottom: 28px; }
+    .credit { position:absolute; left:50%; bottom:8px; transform:translateX(-50%); font-size:8px; color:#d8b6ba; opacity:.95; white-space:nowrap; }
+    .hud { position:absolute; inset:0; padding:6px; background:#000; }
+    .view { display:none; }
+    .view.active { display:block; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; }
+    .header { height: 42px; display:flex; align-items:center; justify-content:space-between; padding:0 10px; background: linear-gradient(180deg, #2b1115, #1a0c0f); }
+    .brand { display:flex; gap:10px; align-items:center; }
+    .brand h1 { margin:0; font-size:15px; line-height:1; letter-spacing:.06em; }
+    .brand small { color: var(--accent-soft); font-size:10px; display:block; margin-top:3px; }
+    .ip { font-size:11px; color:#ffb761; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:6px; }
+    .big-card { height:76px; padding:8px 10px; background: linear-gradient(180deg, #241215, #180d10); }
+    .label { font-size:10px; color: var(--accent-soft); margin-bottom:6px; }
+    .big-number { font-size:28px; font-weight:800; line-height:.9; letter-spacing:-.03em; }
+    .sub { margin-top:3px; color: var(--muted); font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tiny-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-top:6px; }
+    .mini { height:28px; padding:6px 8px; display:flex; align-items:center; justify-content:space-between; font-size:11px; background: linear-gradient(180deg, #211114, #160c0e); }
+    .lower { display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:6px; }
+    .box { min-height:86px; padding:10px; background: linear-gradient(180deg, #211114, #150b0d); }
+    .box.tight { min-height: 52px; padding: 8px; }
+    .gauge-row { display:flex; gap:8px; justify-content:center; margin:2px 0 8px; }
+    .gauge { width:48px; text-align:center; font-size:9px; color: var(--muted); }
+    .ring { width:48px; height:48px; border-radius:50%; display:grid; place-items:center; margin:0 auto 4px; background: radial-gradient(circle closest-side, #0a0f1d 72%, transparent 73%), conic-gradient(var(--ring-color) calc(var(--pct) * 1%), #293247 0); color:white; font-size:12px; font-weight:700; }
+    .context { margin-top:6px; color:white; font-size:21px; font-weight:800; }
+    .meta { color: var(--muted); font-size:10px; margin-top:8px; }
+    .footer { margin-top:6px; background:#12090b; border-radius:6px; color: var(--muted); font-size:9px; padding:3px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .center-screen { height:96px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:8px; }
+    .clock { font-size:36px; font-weight:900; line-height:1; letter-spacing:-.05em; }
+    .date { margin-top:6px; color:var(--accent-soft); font-size:12px; text-transform:capitalize; }
+    .badge-row { display:flex; gap:6px; margin-top:10px; flex-wrap:nowrap; justify-content:center; }
+    .badge { background:#1a0d0f; border:1px solid var(--border); border-radius:999px; padding:4px 8px; font-size:9px; color:var(--muted); max-width:92px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .stats2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; }
+    .stat-card { padding:10px 12px 8px; height:52px; background: linear-gradient(180deg, #241215, #180d10); overflow:hidden; display:flex; flex-direction:column; justify-content:flex-start; }
+    .list { margin-top:6px; display:grid; gap:6px; }
+    .list-item { display:flex; justify-content:space-between; gap:8px; font-size:10px; color:var(--muted); }
+    .list-item b { color:white; }
+    .controls, .json-card { background: rgba(24, 12, 14, .9); border: 1px solid #4a1f26; border-radius: 18px; box-shadow: var(--shadow); }
+    .controls, .json-card { padding:18px; }
+    .controls h2, .json-card h2 { margin:0 0 10px; font-size:18px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; margin-bottom:14px; }
+    .field { flex:1 1 280px; }
+    label { display:block; font-size:12px; color: var(--muted); margin-bottom:6px; }
+    input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #31415f; background:#140a0c; color:white; outline:none; }
+    button { padding:12px 16px; border:0; border-radius:12px; cursor:pointer; background: linear-gradient(180deg, #ff3142, #c20b19); color:white; font-weight:700; }
+    button.secondary { background: linear-gradient(180deg, #2a1619, #1b1012); border:1px solid #5a232b; }
+    .stats { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px; margin-top:12px; }
+    .stat { background:#140a0c; border:1px solid #4a1f26; border-radius:14px; padding:12px; }
+    .stat .k { color:var(--muted); font-size:12px; } .stat .v { color:white; font-size:20px; font-weight:800; margin-top:4px; }
+    pre { margin:0; background:#12090b; color:#ffd4d9; padding:14px; border-radius:14px; overflow:auto; font-size:12px; max-height:460px; }
+    .status-line { font-size:12px; color: var(--muted); margin-top:8px; }
+    @media (max-width: 1080px) { .shell { grid-template-columns: 1fr; } .phone { position: static; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="phone">
+      <div class="device-frame">
+        <div class="screen">
+          <div class="hud">
+            <div id="view-overview" class="view active">
+              <div class="header panel">
+                <div class="brand">
+                  <img src="/openclaw-logo.svg" alt="OpenClaw" style="width:36px;height:36px;border-radius:10px;background:#14090a;padding:4px;object-fit:contain" />
+                  <div><h1>OPENCLAW</h1><small>overview</small></div>
+                </div>
+                <div class="ip" id="ip">0.0.0.0</div>
+              </div>
+              <div class="grid2">
+                <div class="big-card panel"><div class="label">Tokens ativos</div><div class="big-number" style="font-size:22px" id="tokensTotal">--</div></div>
+                <div class="big-card panel"><div class="label">Modelo</div><div class="big-number" style="font-size:18px" id="model">--</div></div>
+              </div>
+              <div class="tiny-grid">
+                <div class="mini panel"><span style="color:var(--green)">RAM</span><b id="ram">--%</b></div>
+                <div class="mini panel"><span style="color:var(--yellow)">DISCO</span><b id="disk">--%</b></div>
+                <div class="mini panel"><span style="color:var(--accent-soft)">DOCKER</span><b id="docker">--</b></div>
+              </div>
+              <div class="lower">
+                <div class="box panel">
+                  <div class="gauge-row">
+                    <div class="gauge"><div class="ring" id="g5h" style="--pct:0;--ring-color:var(--accent)">0%</div>5h free</div>
+                    <div class="gauge"><div class="ring" id="gweek" style="--pct:0;--ring-color:var(--accent-soft)">0%</div>week</div>
+                  </div>
+                  <div class="label">Contexto</div>
+                  <div class="context" id="context">0% usado</div>
+                  <div class="meta" id="versionLine">OpenClaw - / stable</div>
+                </div>
+                <div class="box panel">
+                  <div class="label">Host</div>
+                  <div class="context" style="font-size:20px" id="hostname">ubuntu</div>
+                  <div class="meta" id="uptime">uptime 0h</div>
+                  <div class="meta" id="load">load 0.00</div>
+                  <div class="meta" id="security">security C0 W0</div>
+                  <div class="meta" id="plan" style="margin-top:16px">plan -</div>
+                </div>
+              </div>
+              <div class="footer panel" id="sessionKey"></div>
+            </div>
+
+            <div id="view-clock" class="view">
+              <div class="header panel">
+                <div class="brand">
+                  <img src="/openclaw-logo.svg" alt="OpenClaw" style="width:36px;height:36px;border-radius:10px;background:#14090a;padding:4px;object-fit:contain" />
+                  <div><h1>OPENCLAW</h1><small>clock + status</small></div>
+                </div>
+                <div class="ip" id="clockIp">0.0.0.0</div>
+              </div>
+              <div class="panel center-screen" style="margin-top:6px;">
+                <div class="clock" id="clockTime">00:00</div>
+                <div class="date" id="clockDate">terça, 17 mar</div>
+                <div class="badge-row">
+                  <div class="badge" id="clockStatus">OpenClaw online</div>
+                  <div class="badge" id="clockDocker">Docker 0</div>
+                  <div class="badge" id="clockLoad">Load 0.00</div>
+                </div>
+                <div class="meta" id="clockUpdate" style="margin-top:4px;font-size:9px;line-height:1.1">Última atualização 00:00:00</div>
+              </div>
+            </div>
+
+            <div id="view-infra" class="view">
+              <div class="header panel">
+                <div class="brand">
+                  <img src="/openclaw-logo.svg" alt="OpenClaw" style="width:36px;height:36px;border-radius:10px;background:#14090a;padding:4px;object-fit:contain" />
+                  <div><h1>OPENCLAW</h1><small>infra</small></div>
+                </div>
+                <div class="ip" id="infraIp">0.0.0.0</div>
+              </div>
+              <div class="stats2" style="margin-top:6px;">
+                <div class="stat-card panel"><div class="label">RAM</div><div class="big-number" style="font-size:18px" id="infraRam">0%</div><div class="sub" id="infraLoad">load 0.00</div></div>
+                <div class="stat-card panel"><div class="label">Disco</div><div class="big-number" style="font-size:18px" id="infraDisk">0%</div><div class="sub" id="infraUptime">uptime 0h</div></div>
+                <div class="stat-card panel"><div class="label">Docker</div><div class="big-number" style="font-size:18px" id="infraDocker">0</div><div class="sub">ativos</div></div>
+                <div class="stat-card panel"><div class="label">Gateway</div><div class="big-number" style="font-size:12px;line-height:1.05" id="infraGateway">running</div><div class="sub" id="infraHost">ubuntu</div></div>
+              </div>
+            </div>
+
+            <div id="view-session" class="view">
+              <div class="header panel">
+                <div class="brand">
+                  <img src="/openclaw-logo.svg" alt="OpenClaw" style="width:36px;height:36px;border-radius:10px;background:#14090a;padding:4px;object-fit:contain" />
+                  <div><h1>OPENCLAW</h1><small>session</small></div>
+                </div>
+                <div class="ip" id="sessionIp">0.0.0.0</div>
+              </div>
+              <div class="stats2" style="margin-top:6px;">
+                <div class="stat-card panel"><div class="label">Input</div><div class="big-number" style="font-size:18px" id="sessInput">0</div></div>
+                <div class="stat-card panel"><div class="label">Output</div><div class="big-number" style="font-size:18px" id="sessOutput">0</div></div>
+                <div class="stat-card panel"><div class="label">Cache</div><div class="big-number" style="font-size:18px" id="sessCache">0</div></div>
+                <div class="stat-card panel"><div class="label">Livre</div><div class="big-number" style="font-size:18px" id="sessRemain">0</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="credit">Created by @RafaelCotote</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="controls">
+        <h2>Preview web do display</h2>
+        <div class="row">
+          <div class="field"><label>URL da API</label><input id="apiUrl" value="http://127.0.0.1:8765/status" /></div>
+          <button id="refreshBtn">Atualizar agora</button>
+          <button class="secondary" id="toggleBtn">Auto-refresh: OFF</button>
+          <button class="secondary" id="nextViewBtn">Próxima tela</button>
+        </div>
+        <div class="status-line" id="statusLine">Pronto para carregar.</div>
+        <div class="stats">
+          <div class="stat"><div class="k">Versão</div><div class="v" id="statVersion">-</div></div>
+          <div class="stat"><div class="k">Tokens sessão</div><div class="v" id="statTokens">-</div></div>
+          <div class="stat"><div class="k">Hora local</div><div class="v" id="statTime">-</div></div>
+          <div class="stat"><div class="k">Docker rodando</div><div class="v" id="statDocker">-</div></div>
+        </div>
+      </div>
+      <div class="json-card" style="margin-top:18px;">
+        <h2>JSON retornado</h2>
+        <pre id="jsonView">Aguardando...</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let timer = null, auto = false, currentView = 0;
+    const views = ['overview','clock','infra','session'];
+    function compact(n){ if(n == null) return '--'; if(n >= 1000000) return (n/1000000).toFixed(1)+'M'; if(n>=1000) return (n/1000).toFixed(1)+'k'; return String(n); }
+    function setRing(id,pct){ pct=Math.max(0,Math.min(100,Number(pct||0))); const el=$(id); el.style.setProperty('--pct', pct); el.textContent=pct+'%'; }
+    function activateView(index){ currentView = (index + views.length) % views.length; views.forEach((name,i)=> $('view-'+name).classList.toggle('active', i===currentView)); }
+    function nextView(){ activateView(currentView + 1); }
+    function render(data){
+      const cs = data.openclaw?.currentSession || {};
+      const pu = data.openclaw?.providerUsage || {};
+      const sys = data.system || {};
+      const tm = data.time || {};
+      const docker = data.docker || {};
+      $('ip').textContent = data.device?.ip || '0.0.0.0';
+      $('tokensTotal').textContent = cs.totalTokensCompact || compact(cs.totalTokens);
+      $('model').textContent = cs.model || '-';
+      $('ram').textContent = `${Math.round(sys.memory?.percent || 0)}%`;
+      $('disk').textContent = `${Math.round(sys.disk?.percent || 0)}%`;
+      $('docker').textContent = docker.running ?? 0;
+      setRing('g5h', pu.fiveHourLeftPercent || 0); setRing('gweek', pu.weekLeftPercent || 0);
+      $('context').textContent = `${cs.percentUsed ?? 0}% usado`;
+      $('versionLine').textContent = `OpenClaw ${data.openclaw?.version || '-'} / ${data.openclaw?.channel || 'stable'}`;
+      $('hostname').textContent = data.device?.hostname || 'ubuntu';
+      $('uptime').textContent = `uptime ${sys.uptimeHours || 0}h`;
+      $('load').textContent = `load ${sys.load1 || 0}`;
+      $('security').textContent = `security C${data.openclaw?.security?.critical || 0} W${data.openclaw?.security?.warn || 0}`;
+      $('plan').textContent = pu.plan || '-';
+      $('sessionKey').textContent = cs.keyShort || cs.key || '-';
+      $('clockIp').textContent = data.device?.ip || '-';
+      $('clockTime').textContent = tm.time || '00:00';
+      $('clockDate').textContent = `${tm.weekday || '-'}, ${tm.dateShort || '-'}`;
+      $('clockStatus').textContent = (data.dashboard?.statusText || 'OpenClaw').replace('OpenClaw ', 'Claw ');
+      $('clockDocker').textContent = `Docker ${docker.running ?? 0}`;
+      $('clockLoad').textContent = `Load ${Number(sys.load1 || 0).toFixed(2)}`;
+      $('clockUpdate').textContent = `Última atualização ${data.dashboard?.lastUpdate || '--'}`;
+      $('infraIp').textContent = data.device?.ip || '-';
+      $('infraRam').textContent = `${Math.round(sys.memory?.percent || 0)}%`;
+      $('infraLoad').textContent = `load ${sys.load1 || 0}`;
+      $('infraDisk').textContent = `${Math.round(sys.disk?.percent || 0)}%`;
+      $('infraUptime').textContent = `uptime ${sys.uptimeHours || 0}h`;
+      $('infraDocker').textContent = docker.running ?? 0;
+      $('infraGateway').textContent = ((data.openclaw?.gatewayService || 'running').includes('active')) ? 'active' : 'running';
+      $('infraHost').textContent = data.device?.hostname || '-';
+      const infraContainers = $('infraContainers');
+      if (infraContainers) {
+        infraContainers.innerHTML = (docker.names || []).slice(0,4).map((n,i)=>`<div class="list-item"><span>#${i+1}</span><b>${n}</b></div>`).join('') || '<div class="list-item"><span>sem dados</span><b>-</b></div>';
+      }
+      $('sessionIp').textContent = data.device?.ip || '-';
+      $('sessInput').textContent = cs.inputTokensCompact || compact(cs.inputTokens);
+      $('sessOutput').textContent = cs.outputTokensCompact || compact(cs.outputTokens);
+      $('sessCache').textContent = cs.cacheReadCompact || compact(cs.cacheRead);
+      $('sessRemain').textContent = compact(cs.remainingTokens);
+      $('sessModel').textContent = cs.model || '-';
+      $('sessContext').textContent = `${cs.percentUsed ?? 0}% usado`;
+      $('sessPlan').textContent = pu.plan || '-';
+      $('sessKey').textContent = cs.keyShort || '-';
+      $('statVersion').textContent = data.openclaw?.version || '-';
+      $('statTokens').textContent = cs.totalTokensCompact || compact(cs.totalTokens);
+      $('statTime').textContent = tm.time || '-';
+      $('statDocker').textContent = docker.running ?? 0;
+      $('jsonView').textContent = JSON.stringify(data, null, 2);
+    }
+    async function loadData(){ const url=$('apiUrl').value.trim(); $('statusLine').textContent=`Buscando ${url} ...`; try { const res=await fetch(url,{cache:'no-store'}); if(!res.ok) throw new Error(`HTTP ${res.status}`); const data=await res.json(); render(data); $('statusLine').textContent=`Atualizado às ${new Date().toLocaleTimeString('pt-BR')}`; } catch(err) { $('statusLine').textContent=`Erro: ${err.message}`; } }
+    function applyAuto(){ if(timer) clearInterval(timer); if(auto) timer=setInterval(loadData, 15000); $('toggleBtn').textContent=`Auto-refresh: ${auto ? 'ON' : 'OFF'}`; }
+    $('refreshBtn').addEventListener('click', loadData); $('toggleBtn').addEventListener('click', ()=>{ auto=!auto; applyAuto(); }); $('nextViewBtn').addEventListener('click', nextView);
+    activateView(0); applyAuto(); loadData();
+  </script>
+</body>
+</html>
